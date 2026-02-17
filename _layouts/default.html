@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title }} | Modern Quiz Platform</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Montserrat:wght@900&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
+    <link rel="stylesheet" href="{{ '/assets/css/quiz-style.css' | relative_url }}">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .font-brand {
+            font-family: 'Montserrat', sans-serif;
+        }
+        /* Mengatasi flash content saat Alpine.js loading */
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col">
+
+    <nav class="bg-white/70 backdrop-blur-md sticky top-0 z-[90] border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <a href="{{ '/' | relative_url }}" class="flex items-center gap-2">
+                        <div class="bg-indigo-600 p-2 rounded-lg">
+                            <i class="fas fa-brain text-white"></i>
+                        </div>
+                        <span class="font-brand text-xl tracking-tighter text-indigo-900 uppercase">QUIZ<span class="text-indigo-600">APP</span></span>
+                    </a>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <a href="{{ '/' | relative_url }}" class="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition">Home</a>
+                    
+                    <div class="hidden">
+                        <div data-netlify-identity-menu></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow">
+        {{ content }}
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-8 mt-20">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-slate-500 text-sm italic">
+                &copy; 2026 Modern Quiz Platform. Dibuat dengan 
+                <i class="fas fa-heart text-red-500 mx-1"></i> 
+                menggunakan Jekyll & MongoDB.
+            </p>
+        </div>
+    </footer>
+
+    <script src="{{ '/assets/js/quiz-core.js' | relative_url }}"></script>
+
+    <script>
+        if (window.netlifyIdentity) {
+            window.netlifyIdentity.on("init", user => {
+                if (!user) {
+                    window.netlifyIdentity.on("login", () => {
+                        // Jika berhasil login, arahkan ke dashboard admin
+                        document.location.href = "/admin/";
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

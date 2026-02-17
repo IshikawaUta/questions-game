@@ -1,0 +1,79 @@
+---
+layout: default
+title: Modern Quiz App - Tantang Dirimu!
+---
+
+<div id="name-overlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-900 bg-opacity-90 backdrop-blur-md">
+    <div class="quiz-card p-8 w-full max-w-md mx-4 animate__animated animate__backInDown">
+        <div class="text-center mb-6">
+            <div class="bg-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-user-astronaut text-4xl text-indigo-600"></i>
+            </div>
+            <h2 class="text-3xl font-black text-gray-800">Siap Bermain?</h2>
+            <p class="text-gray-500 mt-2">Masukkan namamu untuk memulai kuis</p>
+        </div>
+        <div class="space-y-4">
+            <input type="text" id="player-name" 
+                   class="w-full p-4 border-2 border-indigo-100 rounded-2xl focus:border-indigo-500 outline-none text-center text-xl font-bold transition-all"
+                   placeholder="Ketik namamu..." maxlength="15">
+            <button onclick="saveName()" 
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg transform transition hover:scale-105 active:scale-95">
+                MULAI PETUALANGAN <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="category-section" class="hidden max-w-4xl mx-auto mt-10 p-4">
+    <div class="text-center mb-10">
+        <h1 class="text-4xl font-black text-indigo-900 mb-2 font-brand">Pilih Topik Kuis</h1>
+        <p class="text-gray-600">Uji pengetahuanmu di bidang yang kamu kuasai</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" x-data>
+        <template x-for="cat in ['Teknologi', 'Sains', 'Sejarah', 'Umum']">
+            <div @click="selectCategory(cat)" 
+                 class="quiz-card p-8 text-center cursor-pointer group hover:bg-indigo-600 transition-all duration-300">
+                <div class="mb-4 text-4xl group-hover:scale-110 transition-transform">
+                    <i :class="{
+                        'fas fa-laptop-code text-blue-500 group-hover:text-white': cat === 'Teknologi',
+                        'fas fa-flask text-green-500 group-hover:text-white': cat === 'Sains',
+                        'fas fa-monument text-amber-500 group-hover:text-white': cat === 'Sejarah',
+                        'fas fa-globe text-purple-500 group-hover:text-white': cat === 'Umum'
+                    }"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 group-hover:text-white" x-text="cat"></h3>
+                <p class="text-gray-500 group-hover:text-indigo-100 mt-2">Mulai tantangan <span x-text="cat"></span></p>
+            </div>
+        </template>
+    </div>
+</div>
+
+<div id="quiz-main-container" class="hidden max-w-2xl mx-auto p-4 mt-10">
+    <div class="quiz-card p-8 bg-white/90 backdrop-blur-lg">
+        <div class="flex justify-between items-center mb-2 font-bold text-indigo-600">
+            <span id="player-display" class="text-sm"></span>
+            <span><i class="fas fa-hourglass-half mr-2"></i> <span id="timer-text">0</span>s</span>
+        </div>
+        <div class="timer-container"><div id="timer-bar" class="timer-bar"></div></div>
+        <div id="quiz-content" class="mt-6">
+            </div>
+    </div>
+</div>
+
+<div id="review-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col animate__animated animate__zoomIn">
+        <div class="p-6 border-b flex justify-between items-center bg-indigo-600 text-white">
+            <h2 class="text-2xl font-bold font-brand">Review Jawaban</h2>
+            <button onclick="closeReview()" class="text-white hover:text-gray-200 text-2xl transition-transform hover:rotate-90">&times;</button>
+        </div>
+        <div id="review-content" class="p-6 overflow-y-auto space-y-4 bg-gray-50">
+            </div>
+        <div class="p-4 border-t bg-white text-center">
+            <button onclick="location.reload()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 shadow-lg transform transition active:scale-95">
+                Main Lagi
+            </button>
+        </div>
+    </div>
+</div>
+
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>

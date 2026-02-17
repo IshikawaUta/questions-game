@@ -1,0 +1,31 @@
+# --- Konfigurasi Build ---
+[build]
+  command = "bundle exec jekyll build"
+  publish = "_site"
+  functions = "functions"
+
+# --- Konfigurasi Environment (Opsional tapi direkomendasikan) ---
+[build.environment]
+  RUBY_VERSION = "3.2.2"
+  JEKYLL_ENV = "production"
+
+# --- Konfigurasi Dev (Untuk 'netlify dev') ---
+[dev]
+  command = "bundle exec jekyll serve --port 4000"
+  port = 8888
+  publish = "_site"
+  targetPort = 4000 
+
+# --- Pengaturan Header & Redirect ---
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer-when-downgrade"

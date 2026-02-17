@@ -1,0 +1,24 @@
+# --- Jekyll & Build Outputs ---
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+.bundle/
+vendor/
+
+# --- Node.js & Netlify ---
+node_modules/
+.netlify/
+functions/node_modules/
+
+# --- Environment & Secrets ---
+.env
+.env.local
+.env.*.local
+*.log
+
+# --- OS & IDE Settings ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

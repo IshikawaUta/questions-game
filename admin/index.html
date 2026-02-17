@@ -1,0 +1,246 @@
+---
+layout: default
+title: Admin Dashboard - Kelola Soal
+---
+
+<div id="admin-panel" class="max-w-6xl mx-auto p-6" x-data="adminQuiz()" x-init="checkAuth()">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div>
+            <h1 class="text-3xl font-black text-gray-800">Admin Dashboard</h1>
+            <p class="text-gray-500">Kelola semua pertanyaan kuis Anda di sini</p>
+        </div>
+        <div class="flex gap-3">
+            <button @click="openBulkModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl shadow-lg transition-all flex items-center">
+                <i class="fas fa-file-import mr-2"></i> Bulk Import
+            </button>
+            <button @click="openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl shadow-lg transition-all flex items-center">
+                <i class="fas fa-plus mr-2"></i> Tambah Soal
+            </button>
+            <button onclick="netlifyIdentity.logout()" class="bg-gray-200 text-gray-700 px-4 py-3 rounded-xl hover:bg-gray-300">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <div x-show="loading" class="text-center py-20">
+        <div class="fancy-loader mx-auto"></div>
+    </div>
+
+    <div class="quiz-card overflow-hidden bg-white shadow-xl rounded-3xl" x-show="!loading">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="p-4 text-gray-600 font-bold uppercase text-xs">Kategori</th>
+                        <th class="p-4 text-gray-600 font-bold uppercase text-xs">Pertanyaan</th>
+                        <th class="p-4 text-gray-600 font-bold uppercase text-xs">Jawaban Benar</th>
+                        <th class="p-4 text-gray-600 font-bold uppercase text-xs text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="q in questions" :key="q._id">
+                        <tr class="border-b last:border-0 hover:bg-indigo-50 transition-colors">
+                            <td class="p-4">
+                                <span class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold" x-text="q.category"></span>
+                            </td>
+                            <td class="p-4 text-gray-800 font-medium" x-text="q.text"></td>
+                            <td class="p-4 text-green-600 font-bold" x-text="q.correct"></td>
+                            <td class="p-4 text-center whitespace-nowrap">
+                                <button @click="editQuestion(q)" class="p-2 text-blue-500 hover:bg-blue-100 rounded-lg mx-1"><i class="fas fa-edit"></i></button>
+                                <button @click="deleteQuestion(q._id)" class="p-2 text-red-500 hover:bg-red-100 rounded-lg mx-1"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div x-show="isModalOpen" class="fixed inset-0 z-[120] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm" x-cloak>
+        <div class="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate__animated animate__zoomIn">
+            <h2 class="text-2xl font-black mb-6 text-gray-800" x-text="editMode ? 'Edit Soal' : 'Tambah Soal Baru'"></h2>
+            <form @submit.prevent="saveQuestion">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Kategori</label>
+                        <select x-model="formData.category" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="Teknologi">Teknologi</option>
+                            <option value="Sains">Sains</option>
+                            <option value="Sejarah">Sejarah</option>
+                            <option value="Umum">Umum</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Timer (Detik)</label>
+                        <input type="number" x-model="formData.timer" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Pertanyaan</label>
+                    <textarea x-model="formData.text" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" rows="3" required></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <template x-for="(opt, index) in formData.options">
+                        <div>
+                            <input type="text" x-model="formData.options[index]" :placeholder="'Opsi ' + (index+1)" class="w-full p-2 bg-gray-50 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-400" required>
+                        </div>
+                    </template>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Jawaban Benar</label>
+                    <select x-model="formData.correct" class="w-full p-3 bg-indigo-50 border-2 border-indigo-200 rounded-xl outline-none">
+                        <template x-for="opt in formData.options">
+                            <option :value="opt" x-text="opt"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" @click="isModalOpen = false" class="px-6 py-2 text-gray-400 font-bold">Batal</button>
+                    <button type="submit" class="bg-indigo-600 text-white px-8 py-2 rounded-xl font-bold shadow-lg hover:bg-indigo-700">Simpan Soal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div x-show="isBulkModalOpen" class="fixed inset-0 z-[130] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm" x-cloak>
+        <div class="bg-white rounded-3xl p-8 w-full max-w-2xl shadow-2xl animate__animated animate__fadeInUp">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h2 class="text-2xl font-black text-gray-800">Bulk Import</h2>
+                    <p class="text-sm text-gray-500">Paste array JSON berisi banyak soal sekaligus.</p>
+                </div>
+                <button @click="isBulkModalOpen = false" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            
+            <textarea x-model="bulkJson" 
+                class="w-full p-4 bg-gray-900 text-green-400 font-mono text-xs rounded-xl outline-none focus:ring-2 focus:ring-green-500" 
+                rows="12" 
+                placeholder='[
+  {
+    "text": "Apa nama planet merah?",
+    "options": ["Mars", "Bumi", "Venus", "Saturnus"],
+    "correct": "Mars",
+    "category": "Sains",
+    "timer": 15
+  }
+]'></textarea>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" @click="isBulkModalOpen = false" class="px-6 py-2 text-gray-400 font-bold">Batal</button>
+                <button @click="processBulkImport" class="bg-green-600 text-white px-8 py-2 rounded-xl font-bold shadow-lg hover:bg-green-700 transition-all">
+                    <i class="fas fa-upload mr-2"></i> Jalankan Import
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script>
+function adminQuiz() {
+    return {
+        questions: [],
+        loading: false,
+        isModalOpen: false,
+        isBulkModalOpen: false,
+        editMode: false,
+        bulkJson: '',
+        formData: { id: null, text: '', options: ['', '', '', ''], correct: '', timer: 15, category: 'Umum' },
+
+        checkAuth() {
+            const user = netlifyIdentity.currentUser();
+            if (!user) {
+                netlifyIdentity.open();
+                netlifyIdentity.on('login', () => location.reload());
+            } else {
+                this.fetchQuestions();
+            }
+        },
+
+        async fetchQuestions() {
+            this.loading = true;
+            try {
+                const res = await fetch('/.netlify/functions/manage-questions');
+                this.questions = await res.json();
+            } catch (e) { console.error(e); }
+            this.loading = false;
+        },
+
+        openModal() {
+            this.editMode = false;
+            this.formData = { id: null, text: '', options: ['', '', '', ''], correct: '', timer: 15, category: 'Umum' };
+            this.isModalOpen = true;
+        },
+
+        openBulkModal() {
+            this.bulkJson = '';
+            this.isBulkModalOpen = true;
+        },
+
+        editQuestion(q) {
+            this.editMode = true;
+            this.formData = { id: q._id, text: q.text, options: [...q.options], correct: q.correct, timer: q.timer, category: q.category };
+            this.isModalOpen = true;
+        },
+
+        async saveQuestion() {
+            const method = this.editMode ? 'PUT' : 'POST';
+            try {
+                await fetch('/.netlify/functions/manage-questions', {
+                    method: method,
+                    body: JSON.stringify(this.formData),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                this.isModalOpen = false;
+                this.fetchQuestions();
+                Swal.fire('Berhasil!', 'Data soal telah diperbarui.', 'success');
+            } catch (e) {
+                Swal.fire('Error', 'Gagal menyimpan soal', 'error');
+            }
+        },
+
+        async processBulkImport() {
+            if(!this.bulkJson.trim()) return;
+            try {
+                const data = JSON.parse(this.bulkJson);
+                if(!Array.isArray(data)) throw new Error("Data harus berupa Array []");
+
+                this.loading = true;
+                const res = await fetch('/.netlify/functions/manage-questions', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await res.json();
+                Swal.fire('Berhasil!', `${result.count || 'Semua'} soal berhasil diimpor.`, 'success');
+                this.isBulkModalOpen = false;
+                this.fetchQuestions();
+            } catch (e) {
+                Swal.fire('Format Error', 'Pastikan JSON valid: ' + e.message, 'error');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async deleteQuestion(id) {
+            const result = await Swal.fire({
+                title: 'Yakin hapus?',
+                text: "Data tidak bisa dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444'
+            });
+
+            if (result.isConfirmed) {
+                await fetch('/.netlify/functions/manage-questions', {
+                    method: 'DELETE',
+                    body: JSON.stringify({ id }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                this.fetchQuestions();
+            }
+        }
+    }
+}
+</script>

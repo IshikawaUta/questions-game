@@ -1,0 +1,40 @@
+# --- Site settings ---
+title: Modern Quiz App
+email: admin@quizapp.com
+description: >- 
+  Platform kuis interaktif modern dengan sistem Leaderboard, 
+  Timer, dan Kategori soal yang dikelola via MongoDB Atlas.
+baseurl: "" 
+url: "https://your-site-name.netlify.app"
+
+# --- Dashboard & Social ---
+twitter_username: jekyllrb
+github_username:  jekyll
+
+# --- Build settings ---
+theme: 
+remote_theme: 
+
+# Plugins yang dibutuhkan
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+# --- Folder Management ---
+exclude:
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - functions/
+  - .netlify/
+  - package.json
+  - package-lock.json
+  - .env
+  - README.md
