@@ -32,13 +32,14 @@ Pastikan Anda sudah menginstal:
 ## 🚀 Instalasi Lokal
 
 1. **Clone repositori ini:**
-   ```bash
+```bash
    git clone https://github.com/IshikawaUta/questions-game.git
    cd questions-game
 
 ```
 
 2. **Instal dependensi Node.js:**
+
 ```bash
 npm install
 
