@@ -3,7 +3,7 @@ layout: default
 title: Admin Dashboard - Kelola Soal
 ---
 
-<div id="admin-panel" class="max-w-6xl mx-auto p-6" x-data="adminQuiz()" x-init="checkAuth()">
+<div id="admin-panel" class="max-w-6xl mx-auto p-6" x-data="adminQuiz()" x-init="initAdmin()">
     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <div>
             <h1 class="text-3xl font-black text-gray-800">Admin Dashboard</h1>
@@ -26,7 +26,7 @@ title: Admin Dashboard - Kelola Soal
         <div class="fancy-loader mx-auto"></div>
     </div>
 
-    <div class="quiz-card overflow-hidden bg-white shadow-xl rounded-3xl" x-show="!loading">
+    <div class="quiz-card overflow-hidden bg-white shadow-xl rounded-3xl" x-show="!loading" x-cloak>
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-gray-50 border-b">
@@ -147,23 +147,45 @@ function adminQuiz() {
         bulkJson: '',
         formData: { id: null, text: '', options: ['', '', '', ''], correct: '', timer: 15, category: 'Umum' },
 
+        // Inisialisasi admin dengan jeda agar Netlify Identity siap
+        initAdmin() {
+            this.loading = true;
+            setTimeout(() => {
+                this.checkAuth();
+            }, 800);
+        },
+
         checkAuth() {
             const user = netlifyIdentity.currentUser();
+            
             if (!user) {
+                this.loading = false;
                 netlifyIdentity.open();
-                netlifyIdentity.on('login', () => location.reload());
+                // Gunakan event listener hanya satu kali, hindari location.reload() langsung jika memungkinkan
+                netlifyIdentity.on('login', (user) => {
+                    netlifyIdentity.close();
+                    this.fetchQuestions();
+                });
             } else {
                 this.fetchQuestions();
             }
+
+            // Jika logout, baru reload total
+            netlifyIdentity.on('logout', () => location.reload());
         },
 
         async fetchQuestions() {
             this.loading = true;
             try {
                 const res = await fetch('/.netlify/functions/manage-questions');
+                if (!res.ok) throw new Error("Gagal mengambil data");
                 this.questions = await res.json();
-            } catch (e) { console.error(e); }
-            this.loading = false;
+            } catch (e) { 
+                console.error(e);
+                // Jangan paksa reload di sini untuk menghindari loop jika API error
+            } finally {
+                this.loading = false;
+            }
         },
 
         openModal() {
@@ -186,14 +208,16 @@ function adminQuiz() {
         async saveQuestion() {
             const method = this.editMode ? 'PUT' : 'POST';
             try {
-                await fetch('/.netlify/functions/manage-questions', {
+                const res = await fetch('/.netlify/functions/manage-questions', {
                     method: method,
                     body: JSON.stringify(this.formData),
                     headers: { 'Content-Type': 'application/json' }
                 });
-                this.isModalOpen = false;
-                this.fetchQuestions();
-                Swal.fire('Berhasil!', 'Data soal telah diperbarui.', 'success');
+                if (res.ok) {
+                    this.isModalOpen = false;
+                    await this.fetchQuestions();
+                    Swal.fire('Berhasil!', 'Data soal telah diperbarui.', 'success');
+                }
             } catch (e) {
                 Swal.fire('Error', 'Gagal menyimpan soal', 'error');
             }
@@ -212,10 +236,12 @@ function adminQuiz() {
                     headers: { 'Content-Type': 'application/json' }
                 });
                 
-                const result = await res.json();
-                Swal.fire('Berhasil!', `${result.count || 'Semua'} soal berhasil diimpor.`, 'success');
-                this.isBulkModalOpen = false;
-                this.fetchQuestions();
+                if (res.ok) {
+                    const result = await res.json();
+                    Swal.fire('Berhasil!', `${result.count || 'Semua'} soal berhasil diimpor.`, 'success');
+                    this.isBulkModalOpen = false;
+                    await this.fetchQuestions();
+                }
             } catch (e) {
                 Swal.fire('Format Error', 'Pastikan JSON valid: ' + e.message, 'error');
             } finally {
@@ -233,12 +259,16 @@ function adminQuiz() {
             });
 
             if (result.isConfirmed) {
-                await fetch('/.netlify/functions/manage-questions', {
-                    method: 'DELETE',
-                    body: JSON.stringify({ id }),
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                this.fetchQuestions();
+                try {
+                    const res = await fetch('/.netlify/functions/manage-questions', {
+                        method: 'DELETE',
+                        body: JSON.stringify({ id }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    if (res.ok) await this.fetchQuestions();
+                } catch (e) {
+                    Swal.fire('Error', 'Gagal menghapus soal', 'error');
+                }
             }
         }
     }
