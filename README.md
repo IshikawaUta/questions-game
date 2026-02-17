@@ -5,7 +5,6 @@ Aplikasi kuis interaktif modern dengan sistem **Serverless** menggunakan Jekyll 
 ## ✨ Fitur Utama
 - 🎨 **Modern UI:** Glassmorphism design dengan Tailwind CSS & Animate.css.
 - 🕒 **Dynamic Timer:** Waktu mundur yang dapat diatur per soal.
-- 🏆 **Leaderboard:** Papan peringkat Top 10 dari database MongoDB.
 - 🔐 **Admin Dashboard:** Kelola soal (CRUD) langsung dari website.
 - 📂 **Kategori:** Pilih topik kuis sesuai keinginan.
 - 📝 **Review Soal:** Lihat pembahasan jawaban benar/salah setelah kuis selesai.
